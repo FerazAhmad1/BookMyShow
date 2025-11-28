@@ -1,7 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from "bcrypt"
 
+interface IUser extends Document {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    isAdmin: boolean;
+    comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUser>({
     name: {
         type: String,
         required: [true, "please provide name"]
@@ -23,9 +32,27 @@ const userSchema = new mongoose.Schema({
 
             return this.password === val
         }
+    },
+    isAdmin: {
+        type: Boolean,
+        reuired: [true, "please provide isAdmin value"],
+        default: false
     }
 })
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) next()
+    const hashedPassword = await bcrypt.hash(this.password, 12);
 
-const User = mongoose.model("User", userSchema)
+    (this as any).confirmPassword = undefined
+    this.password = hashedPassword
+    next()
+})
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
+    console.log("this.password", this.password)
+    return bcrypt.compare(candidatePassword, this.password)
+}
+
+
+const User = mongoose.model("User", userSchema);
 
 export default User
