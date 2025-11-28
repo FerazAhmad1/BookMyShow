@@ -66,7 +66,6 @@ const LoginSignup = () => {
       }
       const email = emailRef.current.value.trim();
       const password = passwordRef.current.value.trim();
-      console.log("VVVVVVVVVVVVVVVVVVVV");
       dispatch(loginUser({ email, password }));
     } catch (error) {
       console.log(error);

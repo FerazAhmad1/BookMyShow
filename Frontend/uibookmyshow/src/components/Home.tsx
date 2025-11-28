@@ -1,8 +1,8 @@
-import DetectLocation from "./DetectLocation";
+import Headers from "./Headers";
 const Home = () => {
   return (
     <div>
-      <DetectLocation />
+      <Headers />
     </div>
   );
 };

@@ -52,7 +52,7 @@ const Citites = () => {
     <div className="flex justify-between items-center p-4 ">
       {cityArr.map((obj) => {
         return (
-          <div>
+          <div className="flex flex-col justify-center items-center">
             <img src={obj.img} />
             <p>{obj.name}</p>
           </div>
