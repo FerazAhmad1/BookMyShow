@@ -6,7 +6,7 @@ const posterSchema = new Schema({
     },
     link: String
 });
-// need to add arist reference 
+// need to add arist reference;
 const movieSchema = new Schema({
     title: {
         type: String,
@@ -20,23 +20,25 @@ const movieSchema = new Schema({
     poster: {
         type: [posterSchema],
         required: [true, "please provide link"],
-        validate: function (val: []) {
-            val.length <= 5
+        validate: {
+            validator: (val: [String]) => val.length > 0 && val.length <= 5,
+            message: "there will at least one poster link and maximum Five poster link is allowed "
         }
     },
     languages: {
         type: [String],
-        reuired: [true, "please provide languages"]
+        required: [true, "please provide languages"]
     },
     subtitle: {
         type: [String],
-        reuired: [true, "please provide available subtile"],
-        validate: function (val: [String]) {
-            return val.length <= 5
+        required: [true, "please provide available subtile"],
+        validate: {
+            validator: (val: [String]) => {
+                return val.length <= 5
+            },
+            message: "only Five subtitles are allowed"
         }
     },
-
-
 });
 const Movie = mongoose.model("movie", movieSchema);
 export default Movie
