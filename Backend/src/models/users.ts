@@ -7,6 +7,7 @@ interface IUser extends Document {
     password: string;
     confirmPassword: string;
     isAdmin: boolean;
+    roles: [String]
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -37,7 +38,13 @@ const userSchema = new mongoose.Schema<IUser>({
         type: Boolean,
         reuired: [true, "please provide isAdmin value"],
         default: false
-    }
+    },
+
+    roles: [{
+        type: String,
+        enum: ["admin", "partner", "user"],
+        default: "user"
+    }]
 })
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) next()

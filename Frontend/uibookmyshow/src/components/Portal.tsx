@@ -1,4 +1,3 @@
-import React from "react";
 import Button from "./Button";
 import ReactDom from "react-dom";
 const Portal = ({ open, onClose, children }) => {
