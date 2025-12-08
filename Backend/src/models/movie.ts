@@ -39,6 +39,10 @@ const movieSchema = new Schema({
             message: "only Five subtitles are allowed"
         }
     },
+    active: {
+        type: Boolean,
+        default: false
+    }
 });
 const Movie = mongoose.model("movie", movieSchema);
 export default Movie

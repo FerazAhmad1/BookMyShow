@@ -46,7 +46,8 @@ const theaterSchema = new Schema({
     },
     ownerId: {
         type: Types.ObjectId,
-        ref: "user"
+        ref: "user",
+        required: [true, "please provide ownerId"]
     }
 })
 const Theater = mongoose.model("theater", theaterSchema);

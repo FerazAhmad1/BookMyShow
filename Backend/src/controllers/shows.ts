@@ -1,0 +1,88 @@
+import { type Request, type Response } from "express";
+import Shows from "../models/shows"
+
+export const createShows = async (req: Request, res: Response) => {
+    try {
+        const { hallId = null, movieId = null, timings = null } = req.body;
+        const data = { hallId, movieId, timings }
+        const response = await Shows.create(data);
+        return res.status(200).json({
+            data: response
+        })
+    } catch (error) {
+        const e = error as any;
+        return res.status(200).json({
+            message: e.message || "SERVER ERROR"
+        })
+    }
+}
+
+
+export const getShow = async (req: Request, res: Response) => {
+    try {
+        const { theaterId = null, hallId = null } = req.query;
+        if (theaterId == null || hallId == null) {
+            return res.status(400).json({
+                message: "please theaterId and hallId"
+            })
+        }
+        const response = await Shows.find({ theaterId, hallId }).populate("movie", "theater", "hall");
+        if (!response) {
+            return res.status(404).json({
+                message: "No sound found"
+            })
+        }
+
+        return res.status(200).json({
+            data: response,
+            message: "success"
+        })
+
+
+    } catch (error) {
+        const e = error as any;
+        return res.status(500).json({
+            message: e.message
+        })
+    }
+}
+
+export const updateShow = async (req: Request, res: Response) => {
+    try {
+        const _id = req.params.id;
+        const { hallId = null, movieId = null, timings = null } = req.body;
+        const data = { hallId, movieId, timings }
+        const update = await Shows.findByIdAndUpdate(_id, { ...data }, { new: true, runValidators: true });
+        if (!update) {
+            res.status(200).json({
+                message: "shows not found"
+            })
+        }
+        return res.status(200).json({
+            message: "show updated succesfully"
+        })
+    } catch (error) {
+        const e = error as any;
+        return res.status(500).json({
+            message: e.message || "SERVER ERROR"
+        })
+    }
+}
+
+export const getShowWithId = async (req: Request, res: Response) => {
+    try {
+        const _id = req.params.id;
+        const response = Shows.findById(_id).populate("movie", "theater");
+        if (!response) {
+            res.status(404).json({
+                message: "show not Found"
+            })
+        }
+        res.status(200).json({
+            data: response,
+            message: "success"
+        })
+    } catch (error) {
+
+    }
+}
