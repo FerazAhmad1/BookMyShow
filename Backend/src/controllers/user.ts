@@ -1,8 +1,10 @@
-import { type Request, type Response } from "express";
+import { type Request, type Response, type NextFunction } from "express";
 import userModal from "../models/users"
 import jwt, { SignOptions } from "jsonwebtoken"
 import type { StringValue } from "ms";
+import { ObjectId } from "mongoose"
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 const signIn = (_id: string) => {
     const secret = process.env.SECRET || "abc"
     const expiresIn = (process.env.EXPIRES_IN || "90d") as StringValue
@@ -80,6 +82,50 @@ export const loginHandler = async (req: Request, res: Response) => {
         res.status(500).json({
             code: 0,
             message: e.message || "Something went wrong"
+        })
+    }
+}
+
+
+export const authorizer = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.headers.authorization) {
+            return res.status(401).json({
+                message: "Unauthorized user"
+            })
+        }
+        if (!req.headers.authorization.startsWith("Bearer")) {
+            return res.status(401).json({
+                message: "Unauthorized user"
+            })
+        }
+        const token = req.headers.authorization.split(" ")[1]
+        if (!token) {
+            return res.status(401).json({
+                message: "Unauthorized user"
+            })
+        }
+        if (!process.env.SECRET) {
+            throw {
+                message: "secret does not found"
+            }
+        }
+        const valid = jwt.verify(token, process.env.SECRET);
+        if (!valid) {
+            return res.status(401).json({
+                message: "Unauthorized user"
+            })
+        }
+        const { _id } = jwt.decode(token) as any
+        const user = userModal.findById(_id);
+        (req as any).user = user
+
+
+        next()
+    } catch (error) {
+        const e = error as any
+        res.status(500).json({
+            message: e.message
         })
     }
 }

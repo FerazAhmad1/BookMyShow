@@ -5,6 +5,7 @@ export const createHall = async (req: Request, res: Response) => {
     try {
         const response = await Hall.create(req.body);
         res.status(201).json({
+            data: response,
             message: "created hall successfully"
         });
     } catch (error) {

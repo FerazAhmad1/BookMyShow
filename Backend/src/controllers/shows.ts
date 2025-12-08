@@ -83,6 +83,32 @@ export const getShowWithId = async (req: Request, res: Response) => {
             message: "success"
         })
     } catch (error) {
+        const e = error as any
+        res.status(500).json({
+            message: e.message || "SERVER ERROR"
+        })
+    }
+}
 
+export const deleteShow = async (req: Request, res: Response) => {
+    try {
+        const _id = req.params.id;
+        const response = await Shows.findByIdAndUpdate(_id, { $set: { active: false } }, { new: true, runValidators: true });
+        if (!response) {
+            return res.status(404).json({
+                message: "show not found"
+            })
+        }
+        return res.status(200).json({
+            data: response,
+            message: "deleted successfully"
+        })
+    } catch (error) {
+
+        const e = error as any;
+        res.status(500).json({
+
+            message: e.message || "SERVER ERROR"
+        })
     }
 }
