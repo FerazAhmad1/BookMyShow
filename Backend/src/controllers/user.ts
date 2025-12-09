@@ -2,9 +2,7 @@ import { type Request, type Response, type NextFunction } from "express";
 import userModal from "../models/users"
 import jwt, { SignOptions } from "jsonwebtoken"
 import type { StringValue } from "ms";
-import { ObjectId } from "mongoose"
-import bcrypt from "bcrypt";
-import mongoose from "mongoose";
+
 const signIn = (_id: string) => {
     const secret = process.env.SECRET || "abc"
     const expiresIn = (process.env.EXPIRES_IN || "90d") as StringValue

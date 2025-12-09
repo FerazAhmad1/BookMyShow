@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import Movie from "../models/movie";
 import { STATUS_CODES } from "http";
+import APIFEATURE from "./getQueryHandlerClass.ts/ApiFeatures";
 
 export const createMovie = async (req: Request, res: Response) => {
     try {
@@ -8,7 +9,8 @@ export const createMovie = async (req: Request, res: Response) => {
         const data = { title, duration, poster, languages, subtitle, active: false };
         const movie = await Movie.create(data);
         res.status(200).json({
-            data: movie
+            data: movie,
+            message: "success"
         })
     } catch (error) {
         const e = error as any;
@@ -18,48 +20,12 @@ export const createMovie = async (req: Request, res: Response) => {
     }
 }
 
-
 export const getMovie = async (req: Request, res: Response) => {
     try {
-        const queryObj = { ...req.query }
-        const exludeField = ["page", "sort", "limit", "fields"];
-        exludeField.forEach((key) => delete queryObj[key]);
-        // Build the query
-        let query = Movie.find(queryObj);
-        // sorting 
-        if (req.query.sort) {
-            const sortBy = (req.query.sort as string).split(",").join(" ")
-
-            query = query.sort(sortBy)
-        } else {
-            query = query.sort('-createdAt')
-        }
-        // project the field 
-        if (req.query.fields) {
-            const fields = (req.query.fields as string).split(",").join(" ")
-            query = query.select(fields)
-        } else {
-            query = query.select("-__v")
-        }
-        const page = (req.query.page as any) * 1 || 1
-        const limit = (req.query.limit as any) * 1 || 100
-        const skip = (page - 1) * limit
-        query = query.skip(skip).limit(limit)
-        // resove the query
-
-        if (req.query.page) {
-            const count = await Movie.countDocuments()
-            if (skip >= count) {
-                throw {
-                    status: 404,
-                    message: "page does not exist"
-                }
-            }
-        }
-        const response = await query;
+        const features = new APIFEATURE(Movie.find(), req.query).filter().sort().limitFields().pagination();
+        const response = await features.query
         return res.status(200).json({
             data: response,
-            message: "success"
         })
 
     } catch (error) {
