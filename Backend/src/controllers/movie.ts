@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import Movie from "../models/movie";
+import { STATUS_CODES } from "http";
 
 export const createMovie = async (req: Request, res: Response) => {
     try {
@@ -20,7 +21,42 @@ export const createMovie = async (req: Request, res: Response) => {
 
 export const getMovie = async (req: Request, res: Response) => {
     try {
-        const response = await Movie.find();
+        const queryObj = { ...req.query }
+        const exludeField = ["page", "sort", "limit", "fields"];
+        exludeField.forEach((key) => delete queryObj[key]);
+        // Build the query
+        let query = Movie.find(queryObj);
+        // sorting 
+        if (req.query.sort) {
+            const sortBy = (req.query.sort as string).split(",").join(" ")
+
+            query = query.sort(sortBy)
+        } else {
+            query = query.sort('-createdAt')
+        }
+        // project the field 
+        if (req.query.fields) {
+            const fields = (req.query.fields as string).split(",").join(" ")
+            query = query.select(fields)
+        } else {
+            query = query.select("-__v")
+        }
+        const page = (req.query.page as any) * 1 || 1
+        const limit = (req.query.limit as any) * 1 || 100
+        const skip = (page - 1) * limit
+        query = query.skip(skip).limit(limit)
+        // resove the query
+
+        if (req.query.page) {
+            const count = await Movie.countDocuments()
+            if (skip >= count) {
+                throw {
+                    status: 404,
+                    message: "page does not exist"
+                }
+            }
+        }
+        const response = await query;
         return res.status(200).json({
             data: response,
             message: "success"
@@ -28,8 +64,8 @@ export const getMovie = async (req: Request, res: Response) => {
 
     } catch (error) {
         const e = error as any;
-        return res.status(500).json({
-            message: e.message
+        return res.status(e.status || 500).json({
+            message: e.message || "SERVER ERROR"
         })
     }
 }
