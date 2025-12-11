@@ -3,16 +3,16 @@ import { Request, Response } from "express";
 
 import Hall from "../models/hall"
 import mongoose, { startSession } from "mongoose";
-
+import APIFEATURE from "./getQueryHandlerClass.ts/ApiFeatures";
 export const listTheater = async (req: Request, res: Response) => {
     try {
         let list = []
         const user = (req as any).user
-        if (user.roles.includes("admin")) {
-            list = await Theater.find()
-        } else {
-            list = await Theater.find({ ownerId: user._id })
+        if (user.roles.includes("partner")) {
+            req.query.ownerId = user._id
         }
+        list = await new APIFEATURE(Theater.find(), req.query).filter().limitFields().sort().pagination().query.populate("user")
+
         return res.status(200).json({
             data: list
         })

@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express";
 import Shows from "../models/shows"
+import APIFEATURE from "./getQueryHandlerClass.ts/ApiFeatures";
 
 export const createShows = async (req: Request, res: Response) => {
     try {
@@ -20,13 +21,10 @@ export const createShows = async (req: Request, res: Response) => {
 
 export const getShow = async (req: Request, res: Response) => {
     try {
-        const { theaterId = null, hallId = null } = req.query;
-        if (theaterId == null || hallId == null) {
-            return res.status(400).json({
-                message: "please theaterId and hallId"
-            })
-        }
-        const response = await Shows.find({ theaterId, hallId }).populate("movie", "theater", "hall");
+        const ApiFeatures = new APIFEATURE(Shows.find(), req.query)
+        const query = ApiFeatures.filter().limitFields().sort().pagination().query
+        const response = await query.populate("movie", "hall", "theater")
+
         if (!response) {
             return res.status(404).json({
                 message: "No sound found"
